@@ -1,0 +1,143 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+/* Para a tabela de classificação em TVs */
+.tv-table .ant-table-thead > tr > th,
+.tv-table .ant-table-tbody > tr > td {
+  font-size: 28px !important;
+  padding: 20px 16px !important;
+  background-color: #1a1a1a !important;
+  color: #fff !important;
+  border-color: #444 !important;
+}
+.tv-table .ant-table-thead > tr > th {
+  background-color: #0d0d0d !important;
+  color: #01ff69 !important;
+  font-weight: bold;
+  font-size: 30px !important;
+}
+
+/* Estilo do input do Select */
+.ant-select-selection-item {
+  color: #fff !important;
+}
+.ant-select-selection-placeholder {
+  color: #aaa !important;
+}
+
+/* Dropdown (popup) */
+.ant-select-dropdown {
+  background-color: #1a1a1a !important;
+  border: 1px solid #333 !important;
+}
+.ant-select-item-option-content {
+  color: #fff !important;
+}
+.ant-select-item-option {
+  background-color: #1a1a1a !important;
+}
+.ant-select-item-option-active,
+.ant-select-item-option-selected {
+  background-color: #01ff6933 !important;
+}
+
+.export-hidden-area {
+  position: fixed;
+  left: -99999px;
+  top: 0;
+  width: 1080px;
+  pointer-events: none;
+  opacity: 1;
+}
+
+/* Botões desabilitados mais visíveis */
+.ant-btn:disabled,
+.ant-btn.ant-btn-disabled {
+  opacity: 0.6 !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  cursor: not-allowed !important;
+}
+
+/* Botão primário desabilitado */
+.ant-btn-primary:disabled,
+.ant-btn-primary.ant-btn-disabled {
+  opacity: 0.5 !important;
+  color: rgba(0, 0, 0, 0.5) !important;
+  background-color: rgba(var(--primary-rgb), 0.3) !important;
+  border-color: rgba(var(--primary-rgb), 0.2) !important;
+}
+
+/* Botão de texto/link desabilitado */
+.ant-btn-text:disabled,
+.ant-btn-link:disabled {
+  opacity: 0.5 !important;
+  color: rgba(255, 255, 255, 0.3) !important;
+}

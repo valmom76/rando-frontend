@@ -1,0 +1,203 @@
+.court-image-poster {
+  --poster-primary: #18ff4f;
+  --poster-primary-rgb: 24, 255, 79;
+  --poster-secondary: #020402;
+  position: relative;
+  width: 1080px;
+  height: 1350px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at center, rgba(var(--poster-primary-rgb), 0.06), transparent 42%),
+    linear-gradient(135deg, var(--poster-secondary) 0%, #050805 70%, #000 100%);
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+  border: 2px solid rgba(var(--poster-primary-rgb), 0.55);
+}
+
+.court-image-bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0.15;
+  background-image:
+    linear-gradient(120deg, transparent 0 46%, rgba(var(--poster-primary-rgb), 0.35) 47%, transparent 48%),
+    linear-gradient(300deg, transparent 0 46%, rgba(var(--poster-primary-rgb), 0.2) 47%, transparent 48%);
+  background-size: 180px 180px;
+}
+
+.court-image-poster::before,
+.court-image-poster::after {
+  content: '';
+  position: absolute;
+  width: 420px;
+  height: 8px;
+  background: var(--poster-primary);
+  box-shadow: 0 0 18px rgba(var(--poster-primary-rgb), 0.9);
+  transform: rotate(-45deg);
+}
+
+.court-image-poster::before {
+  left: -130px;
+  bottom: 115px;
+}
+
+.court-image-poster::after {
+  right: -130px;
+  top: 110px;
+}
+
+.court-image-header {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  padding-top: 50px;
+}
+
+.court-image-line {
+  width: 260px;
+  height: 4px;
+  background: var(--poster-primary);
+  margin: 0 auto 18px;
+  box-shadow: 0 0 16px rgba(var(--poster-primary-rgb), 0.8);
+}
+
+.court-image-header h1 {
+  margin: 0;
+  font-size: 56px;
+  line-height: 1;
+  font-weight: 1000;
+  letter-spacing: 2px;
+  color: #fff;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 10px rgba(var(--poster-primary-rgb), 0.85),
+    0 0 24px rgba(var(--poster-primary-rgb), 0.45);
+}
+
+.court-image-logo {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 50.5%;
+  width: 340px;
+  height: 340px;
+  object-fit: contain;
+  transform: translate(-50%, -50%);
+  opacity: 0.98;
+  filter:
+    drop-shadow(0 0 18px rgba(var(--poster-primary-rgb), 0.95))
+    drop-shadow(0 0 42px rgba(var(--poster-primary-rgb), 0.45));
+}
+
+.court-image-layout {
+  position: absolute;
+  inset: 165px 58px 85px;
+  z-index: 2;
+}
+
+.team-poster-card {
+  position: absolute;
+  width: 400px;
+  min-height: 290px;
+  padding: 64px 24px 20px;
+  border: 2px solid rgba(var(--poster-primary-rgb), 0.78);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(8, 18, 9, 0.95), rgba(0, 0, 0, 0.97)),
+    radial-gradient(circle at top, rgba(var(--poster-primary-rgb), 0.16), transparent 40%);
+  box-shadow:
+    inset 0 0 18px rgba(var(--poster-primary-rgb), 0.13),
+    0 0 22px rgba(var(--poster-primary-rgb), 0.22);
+}
+
+.team-slot-0 {
+  top: 28px;
+  left: 8px;
+}
+
+.team-slot-1 {
+  top: 28px;
+  right: 8px;
+}
+
+.team-slot-2 {
+  bottom: 80px;
+  left: 8px;
+}
+
+.team-slot-3 {
+  bottom: 80px;
+  right: 8px;
+}
+
+.team-poster-title {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  width: 220px;
+  height: 60px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, var(--poster-primary), var(--poster-secondary));
+  border: 2px solid var(--poster-primary);
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 18px rgba(var(--poster-primary-rgb), 0.6),
+    inset 0 0 18px rgba(255, 255, 255, 0.12);
+  clip-path: polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%);
+}
+
+.team-poster-title span {
+  color: #fff;
+  font-size: 26px;
+  font-weight: 1000;
+  font-style: italic;
+  text-transform: uppercase;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
+}
+
+.team-poster-players {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.team-player-row {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  border-bottom: 1px solid rgba(var(--poster-primary-rgb), 0.65);
+  padding-bottom: 5px;
+}
+
+.team-player-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 12px;
+  border-radius: 50%;
+  background: var(--poster-primary);
+  box-shadow: 0 0 12px rgba(var(--poster-primary-rgb), 0.8);
+  flex: 0 0 auto;
+}
+
+.team-player-name {
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow:
+    0 0 8px rgba(var(--poster-primary-rgb), 0.75),
+    0 0 18px rgba(var(--poster-primary-rgb), 0.35);
+}
+
+.team-player-empty {
+  color: #b8ffc8;
+  font-size: 18px;
+  font-weight: 800;
+  padding-top: 30px;
+  text-align: center;
+}

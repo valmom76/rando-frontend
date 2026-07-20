@@ -1,0 +1,101 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* Estilo do input do Select */
+.ant-select-selection-item {
+  color: #fff !important;
+}
+.ant-select-selection-placeholder {
+  color: #aaa !important;
+}
+
+/* Dropdown (popup) */
+.ant-select-dropdown {
+  background-color: #1a1a1a !important;
+  border: 1px solid #333 !important;
+}
+.ant-select-item-option-content {
+  color: #fff !important;
+}
+.ant-select-item-option {
+  background-color: #1a1a1a !important;
+}
+.ant-select-item-option-active,
+.ant-select-item-option-selected {
+  background-color: #01ff6933 !important;
+}
+
+.export-hidden-area {
+  position: fixed;
+  left: -99999px;
+  top: 0;
+  width: 1080px;
+  pointer-events: none;
+  opacity: 1;
+}
+
+/* Botões desabilitados mais visíveis */
+.ant-btn:disabled,
+.ant-btn.ant-btn-disabled {
+  opacity: 0.6 !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  cursor: not-allowed !important;
+}
+
+/* Botão primário desabilitado */
+.ant-btn-primary:disabled,
+.ant-btn-primary.ant-btn-disabled {
+  opacity: 0.5 !important;
+  color: rgba(0, 0, 0, 0.5) !important;
+  background-color: rgba(var(--primary-rgb), 0.3) !important;
+  border-color: rgba(var(--primary-rgb), 0.2) !important;
+}
+
+/* Botão de texto/link desabilitado */
+.ant-btn-text:disabled,
+.ant-btn-link:disabled {
+  opacity: 0.5 !important;
+  color: rgba(255, 255, 255, 0.3) !important;
+}
