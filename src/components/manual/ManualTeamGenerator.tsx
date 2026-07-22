@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Alert,
   Badge,
   Button,
   Card,
@@ -25,8 +26,10 @@ import {
   TrophyOutlined,
   UserAddOutlined,
   UserDeleteOutlined,
+  HistoryOutlined,
+  LockOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { usePlayers } from "../../hooks/usePlayers";
 import { useManualTeams } from "../../hooks/useManualTeams";
@@ -47,6 +50,33 @@ type TenantSettingsResponse = {
   sportType: SportType;
 };
 
+type GeneratedPlayer = {
+  id?: string;
+  playerId?: string;
+  name: string;
+};
+
+type GeneratedTeam = {
+  teamIndex: number;
+  players: GeneratedPlayer[];
+};
+
+type GeneratedSessionResponse = {
+  sessionId: string;
+  teams: GeneratedTeam[];
+};
+
+const getApiErrorMessage = (error: unknown, fallback: string) => {
+  if (typeof error !== "object" || error === null || !("response" in error)) {
+    return fallback;
+  }
+  const data = (error as { response?: { data?: unknown } }).response?.data;
+  if (typeof data !== "object" || data === null) return fallback;
+  if ("error" in data && typeof data.error === "string") return data.error;
+  if ("message" in data && typeof data.message === "string") return data.message;
+  return fallback;
+};
+
 export const ManualTeamGenerator: React.FC = () => {
   const screens = useBreakpoint();
   const isMobile = !screens.md;
@@ -59,6 +89,9 @@ export const ManualTeamGenerator: React.FC = () => {
   const { saveManualTeams, isSaving } = useManualTeams();
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedSessionId = searchParams.get("sessionId");
+  const importedSessionRef = useRef<string | null>(null);
 
   const [teamCount, setTeamCount] = useState(2);
   const [playersPerTeam, setPlayersPerTeam] = useState(4);
@@ -82,6 +115,10 @@ export const ManualTeamGenerator: React.FC = () => {
   const [startersPerTeam, setStartersPerTeam] = useState(4);
   const [yellowCardsForSuspension, setYellowCardsForSuspension] = useState(3);
   const [redCardSuspensionMatches, setRedCardSuspensionMatches] = useState(1);
+  const [sourceSessionId, setSourceSessionId] = useState<string | null>(null);
+  const [importingTeams, setImportingTeams] = useState(false);
+  const [savingImportedChampionship, setSavingImportedChampionship] = useState(false);
+  const isImportedGeneration = Boolean(sourceSessionId);
 
   useEffect(() => {
     let mounted = true;
@@ -102,6 +139,102 @@ export const ManualTeamGenerator: React.FC = () => {
       mounted = false;
     };
   }, []);
+
+  const applyGeneratedTeams = useCallback((sessionId: string, generatedTeams: GeneratedTeam[]) => {
+    const orderedTeams = [...generatedTeams].sort(
+      (first, second) => first.teamIndex - second.teamIndex
+    );
+    if (orderedTeams.length < 2) {
+      throw new Error("A geração precisa possuir pelo menos dois times.");
+    }
+
+    const importedPlayersPerTeam = orderedTeams[0]?.players.length ?? 0;
+    if (
+      importedPlayersPerTeam < 1
+      || orderedTeams.some((team) => team.players.length !== importedPlayersPerTeam)
+    ) {
+      throw new Error("A geração selecionada possui times incompletos ou com tamanhos diferentes.");
+    }
+
+    const importedTeams = orderedTeams.reduce<TeamsState>((accumulator, team) => {
+      const playerIds = team.players.map((player) => player.id ?? player.playerId ?? "");
+      if (playerIds.some((playerId) => !playerId)) {
+        throw new Error("Não foi possível identificar todos os jogadores da geração.");
+      }
+      accumulator[team.teamIndex] = playerIds;
+      return accumulator;
+    }, {});
+
+    const defaultGroupsCount = Math.min(2, orderedTeams.length);
+    const importedGroups = orderedTeams.reduce<Record<number, number>>(
+      (accumulator, team, index) => {
+        accumulator[team.teamIndex] = (index % defaultGroupsCount) + 1;
+        return accumulator;
+      },
+      {}
+    );
+
+    setTeamCount(orderedTeams.length);
+    setPlayersPerTeam(importedPlayersPerTeam);
+    setTeams(importedTeams);
+    setTeamNames({});
+    setGroupsCount(defaultGroupsCount);
+    setTeamGroups(importedGroups);
+    setQualifiedPerGroup(Math.min(2, Math.floor(orderedTeams.length / defaultGroupsCount)));
+    setStartersPerTeam(Math.min(4, importedPlayersPerTeam));
+    setSourceSessionId(sessionId);
+  }, []);
+
+  const importGeneratedSession = useCallback(async (sessionId: string) => {
+    setImportingTeams(true);
+    try {
+      const { data } = await http.get<GeneratedTeam[]>(`/teams/session/${sessionId}`);
+      applyGeneratedTeams(sessionId, data);
+      message.success("Times do sorteio carregados para o campeonato!");
+    } catch (error: unknown) {
+      importedSessionRef.current = null;
+      message.error(getApiErrorMessage(error, "Não foi possível carregar a geração selecionada."));
+      navigate("/manual-teams", { replace: true });
+    } finally {
+      setImportingTeams(false);
+    }
+  }, [applyGeneratedTeams, navigate]);
+
+  useEffect(() => {
+    if (!requestedSessionId || importedSessionRef.current === requestedSessionId) return;
+    importedSessionRef.current = requestedSessionId;
+    void importGeneratedSession(requestedSessionId);
+  }, [importGeneratedSession, requestedSessionId]);
+
+  const recoverLatestGeneration = async () => {
+    setImportingTeams(true);
+    try {
+      const { data } = await http.get<GeneratedSessionResponse>("/teams/latest-session");
+      importedSessionRef.current = data.sessionId;
+      applyGeneratedTeams(data.sessionId, data.teams);
+      navigate(`/manual-teams?sessionId=${data.sessionId}`, { replace: true });
+      message.success("Última geração recuperada!");
+    } catch (error: unknown) {
+      importedSessionRef.current = null;
+      message.error(getApiErrorMessage(error, "Nenhuma geração de times foi encontrada."));
+    } finally {
+      setImportingTeams(false);
+    }
+  };
+
+  const returnToManualSelection = () => {
+    importedSessionRef.current = null;
+    setSourceSessionId(null);
+    setTeamCount(2);
+    setPlayersPerTeam(4);
+    setTeams({ 1: [], 2: [] });
+    setTeamNames({ 1: "", 2: "" });
+    setTeamGroups({ 1: 1, 2: 1 });
+    setGroupsCount(2);
+    setQualifiedPerGroup(2);
+    setStartersPerTeam(4);
+    navigate("/manual-teams", { replace: true });
+  };
 
   useEffect(() => {
     setTeams((prev) => {
@@ -237,6 +370,35 @@ export const ManualTeamGenerator: React.FC = () => {
       return;
     }
 
+    if (isGroups) {
+      if (groupsCount < 1 || groupsCount > teamCount) {
+        message.error("O número de grupos deve estar entre 1 e o total de times.");
+        return;
+      }
+
+      const groupSizes = Array.from({ length: groupsCount }, (_, index) =>
+        Object.values(teamGroups).filter((groupId) => groupId === index + 1).length
+      );
+      const smallestGroup = Math.min(...groupSizes);
+      if (smallestGroup === 0) {
+        message.error("Todos os grupos precisam ter pelo menos um time.");
+        return;
+      }
+      if (qualifiedPerGroup > smallestGroup) {
+        message.error(
+          `O número de classificados não pode superar o menor grupo (${smallestGroup} times).`
+        );
+        return;
+      }
+    }
+
+    const normalizedTeamNames = Object.entries(teamNames).reduce((acc, [index, name]) => {
+      if (name.trim()) {
+        acc[Number(index)] = name.trim();
+      }
+      return acc;
+    }, {} as Record<number, string>);
+
     const payload = {
       name: championshipName.trim(),
       format: championshipFormat,
@@ -249,13 +411,7 @@ export const ManualTeamGenerator: React.FC = () => {
         groupId:
           isGroups ? teamGroups[Number(index)] || 1 : 0,
       })),
-      teamNames: Object.entries(teamNames).reduce((acc, [index, name]) => {
-        if (name.trim()) {
-          acc[Number(index)] = name.trim();
-        }
-
-        return acc;
-      }, {} as Record<number, string>),
+      teamNames: normalizedTeamNames,
       setsToWin: isFootball ? 1 : setsToWin,
       pointsPerSet: isFootball ? 0 : pointsPerSet,
       tieBreakPoints: isFootball ? 0 : tieBreakPoints,
@@ -265,14 +421,39 @@ export const ManualTeamGenerator: React.FC = () => {
     };
 
     try {
-      const result = await saveManualTeams(payload);
+      let championshipId: string;
+      if (sourceSessionId) {
+        setSavingImportedChampionship(true);
+        const { data } = await http.post<{ id: string }>("/championships", {
+          name: payload.name,
+          generationSessionId: sourceSessionId,
+          format: payload.format,
+          matchesType: payload.matchesType,
+          groupsCount: payload.groupsCount,
+          teamsPerGroup: isGroups ? Math.ceil(teamCount / groupsCount) : 0,
+          qualifiedPerGroup: payload.qualifiedPerGroup,
+          teamNames: normalizedTeamNames,
+          teamGroups: isGroups ? teamGroups : {},
+          setsToWin: payload.setsToWin,
+          pointsPerSet: payload.pointsPerSet,
+          tieBreakPoints: payload.tieBreakPoints,
+          startersPerTeam: payload.startersPerTeam,
+          yellowCardsForSuspension: payload.yellowCardsForSuspension,
+          redCardSuspensionMatches: payload.redCardSuspensionMatches,
+        });
+        championshipId = data.id;
+      } else {
+        const result = await saveManualTeams(payload);
+        championshipId = result.championshipId;
+      }
 
       message.success("Campeonato criado com sucesso!");
-      navigate(`/championships/${result.championshipId}`);
-    } catch {
-      message.error("Erro ao criar campeonato");
-    } finally {
       setModalVisible(false);
+      navigate(`/championships/${championshipId}`);
+    } catch (error: unknown) {
+      message.error(getApiErrorMessage(error, "Erro ao criar campeonato"));
+    } finally {
+      setSavingImportedChampionship(false);
     }
   };
 
@@ -287,6 +468,25 @@ export const ManualTeamGenerator: React.FC = () => {
       }
     >
       <div className="manual-teams-config-stack">
+        {isImportedGeneration ? (
+          <Button
+            block
+            icon={<LockOutlined />}
+            onClick={returnToManualSelection}
+          >
+            Trocar para seleção manual
+          </Button>
+        ) : (
+          <Button
+            block
+            icon={<HistoryOutlined />}
+            loading={importingTeams}
+            onClick={() => void recoverLatestGeneration()}
+          >
+            Recuperar última geração
+          </Button>
+        )}
+
         <div>
           <Text className="manual-teams-field-label">Número de times</Text>
 
@@ -294,6 +494,7 @@ export const ManualTeamGenerator: React.FC = () => {
             min={2}
             value={teamCount}
             onChange={(value) => setTeamCount(Math.max(2, Number(value) || 2))}
+            disabled={isImportedGeneration}
             className="players-full-control"
           />
         </div>
@@ -307,6 +508,7 @@ export const ManualTeamGenerator: React.FC = () => {
             onChange={(value) =>
               setPlayersPerTeam(Math.max(1, Number(value) || 1))
             }
+            disabled={isImportedGeneration}
             className="players-full-control"
           />
         </div>
@@ -344,7 +546,12 @@ export const ManualTeamGenerator: React.FC = () => {
       }
     >
       <div className="manual-teams-scroll">
-        {availablePlayers.length === 0 ? (
+        {isImportedGeneration ? (
+          <Empty
+            description="Os jogadores vieram do sorteio. Para alterar a composição, volte à geração de times."
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+        ) : availablePlayers.length === 0 ? (
           <Empty
             description="Nenhum jogador disponível"
             image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -428,12 +635,14 @@ export const ManualTeamGenerator: React.FC = () => {
                         {player?.name}
                       </span>
 
-                      <Button
-                        size="small"
-                        danger
-                        icon={<UserDeleteOutlined />}
-                        onClick={() => removePlayerFromTeam(teamIndex, playerId)}
-                      />
+                      {!isImportedGeneration && (
+                        <Button
+                          size="small"
+                          danger
+                          icon={<UserDeleteOutlined />}
+                          onClick={() => removePlayerFromTeam(teamIndex, playerId)}
+                        />
+                      )}
                     </div>
                   );
                 })
@@ -450,10 +659,10 @@ export const ManualTeamGenerator: React.FC = () => {
     </Card>
   );
 
-  if (playersLoading || sportLoading) {
+  if (playersLoading || sportLoading || (importingTeams && requestedSessionId && !sourceSessionId)) {
     return (
       <div className="teamgen-loading-state">
-        Carregando jogadores...
+        {importingTeams ? "Carregando times do sorteio..." : "Carregando jogadores..."}
       </div>
     );
   }
@@ -479,6 +688,21 @@ export const ManualTeamGenerator: React.FC = () => {
           className="manual-teams-counter"
         />
       </header>
+
+      {isImportedGeneration && (
+        <Alert
+          type="info"
+          showIcon
+          message="Times importados do sorteio"
+          description="A composição dos times está bloqueada para preservar a geração escolhida. Você ainda pode definir nomes, formato, grupos e regras do campeonato."
+          action={
+            <Button size="small" onClick={() => navigate("/generator")}>
+              Ver sorteio
+            </Button>
+          }
+          style={{ marginBottom: 16 }}
+        />
+      )}
 
       {isMobile ? (
         <div className="manual-teams-mobile-shell">
@@ -596,7 +820,18 @@ export const ManualTeamGenerator: React.FC = () => {
                 <InputNumber
                   min={1}
                   value={groupsCount}
-                  onChange={(value) => setGroupsCount(Number(value) || 1)}
+                  onChange={(value) => {
+                    const nextGroupsCount = Math.max(1, Number(value) || 1);
+                    setGroupsCount(nextGroupsCount);
+                    setTeamGroups((currentGroups) =>
+                      Object.fromEntries(
+                        Object.entries(currentGroups).map(([teamIndex, groupId]) => [
+                          Number(teamIndex),
+                          groupId > nextGroupsCount ? 1 : groupId,
+                        ])
+                      )
+                    );
+                  }}
                   className="players-full-control"
                 />
               </Form.Item>
@@ -766,7 +1001,7 @@ export const ManualTeamGenerator: React.FC = () => {
             <Button
               type="primary"
               onClick={handleSaveChampionship}
-              loading={isSaving}
+              loading={isSaving || savingImportedChampionship}
               block
               icon={<TrophyOutlined />}
               className="manual-teams-submit"

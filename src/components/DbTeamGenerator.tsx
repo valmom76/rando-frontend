@@ -22,15 +22,21 @@ import {
 } from "antd";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
 import {
+  CheckOutlined,
+  CloseOutlined,
   HistoryOutlined,
+  HolderOutlined,
   PlayCircleOutlined,
   SwapOutlined,
+  TrophyOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
 
 import { http } from "../api/http";
+import { authStore } from "../auth/store";
 import { usePlayers } from "../hooks/usePlayers";
+import { SessionAttendanceCard } from "./attendance/SessionAttendanceCard";
 import { CourtSetupModal } from "./CourtPosterImage/CourtSetupModal";
 
 const { Text } = Typography;
@@ -111,15 +117,28 @@ const DEFAULT_TEAM_COUNT = 8;
 const DEFAULT_PLAYERS_PER_TEAM = 4;
 const DEFAULT_FRIENDLY_POINTS = 12;
 
+const getApiErrorMessage = (error: unknown, fallback: string) => {
+  if (typeof error !== "object" || error === null || !("response" in error)) {
+    return fallback;
+  }
+  const data = (error as { response?: { data?: unknown } }).response?.data;
+  if (typeof data !== "object" || data === null) return fallback;
+  if ("message" in data && typeof data.message === "string") return data.message;
+  if ("error" in data && typeof data.error === "string") return data.error;
+  return fallback;
+};
+
 export default function DbTeamGenerator() {
   const isMobile = useMediaQuery({ maxWidth: 768 });
   const navigate = useNavigate();
+  const isAdmin = authStore.get().role === "ADMIN";
 
   const [step, setStep] = useState<StepKey>("players");
 
   const [skillsLoading, setSkillsLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [recovering, setRecovering] = useState(false);
+  const [attendanceConfirmed, setAttendanceConfirmed] = useState(false);
 
   const [skills, setSkills] = useState<Skill[]>([]);
 
@@ -150,6 +169,10 @@ export default function DbTeamGenerator() {
 
   const [result, setResult] = useState<GenerateDbResponse | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
+
+  useEffect(() => {
+    setAttendanceConfirmed(false);
+  }, [result?.sessionId]);
 
   const [courtModalOpen, setCourtModalOpen] = useState(false);
   const [adjustModalOpen, setAdjustModalOpen] = useState(false);
@@ -351,8 +374,8 @@ export default function DbTeamGenerator() {
       setStep("result");
 
       message.success("Times gerados com sucesso!");
-    } catch (error: any) {
-      message.error(error?.response?.data?.message ?? "Erro ao gerar times");
+    } catch (error: unknown) {
+      message.error(getApiErrorMessage(error, "Erro ao gerar times"));
     } finally {
       setGenerating(false);
     }
@@ -391,10 +414,8 @@ export default function DbTeamGenerator() {
       setStep("result");
 
       message.success("Última geração recuperada!");
-    } catch (error: any) {
-      message.error(
-        error?.response?.data?.message ?? "Nenhuma sessão anterior encontrada."
-      );
+    } catch (error: unknown) {
+      message.error(getApiErrorMessage(error, "Nenhuma sessão anterior encontrada."));
     } finally {
       setRecovering(false);
     }
@@ -508,11 +529,8 @@ export default function DbTeamGenerator() {
           fromTeamIndex,
           toTeamIndex,
         });
-      } catch (error: any) {
-        message.error(
-          error?.response?.data?.message ??
-            "Erro ao mover jogador. Revertendo..."
-        );
+      } catch (error: unknown) {
+        message.error(getApiErrorMessage(error, "Erro ao mover jogador. Revertendo..."));
 
         setTeams(previousTeams);
       }
@@ -614,6 +632,10 @@ export default function DbTeamGenerator() {
   const handleStartSession = useCallback(
     async (courts: { name: string; teamIndices: number[] }[], sessionDate?: string, sessionTime?: string) => {
       if (!result?.sessionId) return;
+      if (!attendanceConfirmed) {
+        message.warning("Confirme as presenças antes de iniciar a sessão.");
+        return;
+      }
       try {
         await http.post("/game-sessions/start-with-courts", {
           generationSessionId: result.sessionId,
@@ -626,12 +648,12 @@ export default function DbTeamGenerator() {
         message.success("Sessão iniciada com sucesso!");
         setCourtModalOpen(false);
         navigate(`/friendly-sessions/${result.sessionId}`);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(err);
-        message.error(err?.response?.data?.message ?? "Erro ao iniciar sessão");
+        message.error(getApiErrorMessage(err, "Erro ao iniciar sessão"));
       }
     },
-    [result?.sessionId, navigate, friendlyPointsPerSet]
+    [attendanceConfirmed, result?.sessionId, navigate, friendlyPointsPerSet]
   );
 
   const renderTeamsGrid = (compact: boolean) => (
@@ -649,7 +671,10 @@ export default function DbTeamGenerator() {
             onDrop={(event) => onDropOnTeam(event, team.teamIndex)}
           >
             <div className="teamgen-team-title">
-              Time {team.teamIndex} <span>• {team.sumScore.toFixed(1)}</span>
+              <span className="teamgen-team-name">Time {team.teamIndex}</span>
+              <span className="teamgen-team-score">
+                Nota total {team.sumScore.toFixed(1)}
+              </span>
             </div>
 
             <div className="teamgen-team-players">
@@ -680,10 +705,20 @@ export default function DbTeamGenerator() {
                         : "Jogador sem ID"
                     }
                   >
-                    <span className="teamgen-player-name">{player.name}</span>
+                    <span className="teamgen-player-main">
+                      {!compact && (
+                        <HolderOutlined
+                          className="teamgen-player-drag-icon"
+                          aria-hidden="true"
+                        />
+                      )}
+
+                      <span className="teamgen-player-name">{player.name}</span>
+                    </span>
 
                     <span className="teamgen-player-meta">
-                      {player.sex} • {player.score.toFixed(1)}
+                      <span className="teamgen-player-sex">{player.sex}</span>
+                      <span>{player.score.toFixed(1)}</span>
                     </span>
                   </div>
                 );
@@ -1021,6 +1056,12 @@ export default function DbTeamGenerator() {
 
           <Button 
             onClick={resetAll} 
+            disabled={attendanceConfirmed}
+            title={
+              attendanceConfirmed
+                ? "Retire a confirmação de presença antes de iniciar um novo sorteio."
+                : undefined
+            }
             size={isMobile ? "small" : "middle"}
             className="dashboard-btn primary"
           >
@@ -1040,8 +1081,13 @@ export default function DbTeamGenerator() {
             <div className="teamgen-actions">
               <Button
                 onClick={generate}
-                disabled={!canGenerate || generating}
+                disabled={!canGenerate || generating || attendanceConfirmed}
                 icon={<SwapOutlined />}
+                title={
+                  attendanceConfirmed
+                    ? "Retire a confirmação de presença antes de reembaralhar."
+                    : undefined
+                }
                 size={isMobile ? "small" : "middle"}
                 className="dashboard-btn primary"
               >
@@ -1058,8 +1104,33 @@ export default function DbTeamGenerator() {
 
               <Button
                 type="primary"
+                icon={<TrophyOutlined />}
+                onClick={() =>
+                  result?.sessionId &&
+                  navigate(`/manual-teams?sessionId=${encodeURIComponent(result.sessionId)}`)
+                }
+                disabled={attendanceConfirmed}
+                title={
+                  attendanceConfirmed
+                    ? "Esta geração já foi confirmada para um amistoso. Retire a confirmação para criar um campeonato."
+                    : undefined
+                }
+                size={isMobile ? "small" : "middle"}
+                className="dashboard-btn primary"
+              >
+                Criar Campeonato
+              </Button>
+
+              <Button
+                type="primary"
                 icon={<PlayCircleOutlined />}
                 onClick={() => setCourtModalOpen(true)}
+                disabled={!attendanceConfirmed}
+                title={
+                  attendanceConfirmed
+                    ? "Configurar quadras e iniciar a sessão."
+                    : "Confirme as presenças antes de iniciar a sessão."
+                }
                 size={isMobile ? "small" : "middle"}
                 className="dashboard-btn primary"
               >
@@ -1067,6 +1138,16 @@ export default function DbTeamGenerator() {
               </Button>
             </div>
           </div>
+
+          {result?.sessionId && (
+            <div className="teamgen-attendance-section">
+              <SessionAttendanceCard
+                sessionId={result.sessionId}
+                readOnly={!isAdmin}
+                onConfirmationChange={setAttendanceConfirmed}
+              />
+            </div>
+          )}
 
           <div className="teamgen-teams-scroll">{renderTeamsGrid(true)}</div>
         </>
@@ -1113,23 +1194,46 @@ export default function DbTeamGenerator() {
 
       <Modal
         title={
-          <div className="teamgen-adjust-modal-title">
-            <span>Ajustar Times</span>
+          <div className="teamgen-adjust-modal-heading">
+            <span className="teamgen-adjust-modal-icon" aria-hidden="true">
+              <SwapOutlined />
+            </span>
 
-            <div className="teamgen-actions">
-              <Button type="primary" onClick={() => setAdjustModalOpen(false)}>
-                Concluído
-              </Button>
-
-              <Button onClick={() => setAdjustModalOpen(false)}>Fechar</Button>
+            <div>
+              <div className="teamgen-adjust-modal-title">Ajustar times</div>
+              <div className="teamgen-adjust-modal-subtitle">
+                Arraste os jogadores entre os cartões para reorganizar os times.
+              </div>
             </div>
           </div>
         }
         open={adjustModalOpen}
         onCancel={() => setAdjustModalOpen(false)}
-        footer={null}
-        closable={false}
-        width="100vw"
+        footer={
+          <div className="teamgen-adjust-modal-footer">
+            <span className="teamgen-adjust-modal-summary">
+              {teams.length} time{teams.length === 1 ? "" : "s"} ·{" "}
+              {teams.reduce((total, team) => total + team.players.length, 0)}{" "}
+              jogadores
+            </span>
+
+            <div className="teamgen-adjust-modal-actions">
+              <Button onClick={() => setAdjustModalOpen(false)}>Fechar</Button>
+
+              <Button
+                type="primary"
+                icon={<CheckOutlined />}
+                onClick={() => setAdjustModalOpen(false)}
+                className="dashboard-btn primary"
+              >
+                Concluir ajustes
+              </Button>
+            </div>
+          </div>
+        }
+        closable
+        closeIcon={<CloseOutlined />}
+        width={1200}
         className="teamgen-adjust-modal"
       >
         {teams.length > 0 ? (

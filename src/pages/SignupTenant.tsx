@@ -76,7 +76,7 @@ export default function SignupTenant() {
               name="sportType"
               rules={[{ required: true, message: "Selecione o esporte" }]}
               extra={
-                <Typography.Text type="secondary" style={{ fontSize: 12, color: "#FFF" }}>
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
                   O esporte não poderá ser alterado depois que o grupo tiver jogadores ou campeonatos.
                 </Typography.Text>
               }

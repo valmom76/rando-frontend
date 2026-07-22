@@ -117,6 +117,7 @@ type FootballManagementData = {
 
 type TeamSide = 'home' | 'away';
 type BoardSide = 'left' | 'right';
+type FootballManagementTab = 'lineup' | 'officials' | 'cards' | 'substitutions';
 
 const getApiErrorMessage = (error: unknown, fallback: string) => {
   if (typeof error !== 'object' || error === null || !('response' in error)) {
@@ -221,6 +222,8 @@ export const ScoreboardModal: React.FC<ScoreboardModalProps> = ({
   const [saving, setSaving] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [footballManagementVisible, setFootballManagementVisible] = useState(false);
+  const [footballManagementInitialTab, setFootballManagementInitialTab] =
+    useState<FootballManagementTab>('lineup');
   const [footballManagement, setFootballManagement] =
     useState<FootballManagementData | null>(null);
   const [pendingGoalTeam, setPendingGoalTeam] = useState<TeamSide | null>(null);
@@ -349,6 +352,7 @@ export const ScoreboardModal: React.FC<ScoreboardModalProps> = ({
     setWoModalVisible(false);
     setSelectedWoWinner(null);
     setFootballManagementVisible(false);
+    setFootballManagementInitialTab('lineup');
     setFootballManagement(null);
     setPendingGoalTeam(null);
     setGoalPlayerId(undefined);
@@ -478,6 +482,7 @@ export const ScoreboardModal: React.FC<ScoreboardModalProps> = ({
       );
       if (!hasConfiguredLineup) {
         message.warning('Configure a escalação antes de registrar um gol.');
+        setFootballManagementInitialTab('lineup');
         setFootballManagementVisible(true);
         return;
       }
@@ -806,26 +811,54 @@ export const ScoreboardModal: React.FC<ScoreboardModalProps> = ({
           {isFootball ? (
             <>
               {championshipId && matchId && (
-                <Tooltip title="Escalação, cartões e arbitragem">
-                  <Button
-                    shape="circle"
-                    size="small"
-                    icon={<TeamOutlined />}
-                    onClick={() => setFootballManagementVisible(true)}
-                    style={{
-                      backgroundColor: '#333',
-                      borderColor: 'var(--primary)',
-                      color: 'var(--primary)',
-                      width: middleButtonSize,
-                      height: middleButtonSize,
-                      minWidth: middleButtonSize,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginBottom: shouldStackScores ? 5 : 15,
-                    }}
-                  />
-                </Tooltip>
+                <>
+                  <Tooltip title="Escalação, cartões e arbitragem">
+                    <Button
+                      shape="circle"
+                      size="small"
+                      icon={<TeamOutlined />}
+                      onClick={() => {
+                        setFootballManagementInitialTab('lineup');
+                        setFootballManagementVisible(true);
+                      }}
+                      style={{
+                        backgroundColor: '#333',
+                        borderColor: 'var(--primary)',
+                        color: 'var(--primary)',
+                        width: middleButtonSize,
+                        height: middleButtonSize,
+                        minWidth: middleButtonSize,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: shouldStackScores ? 5 : 15,
+                      }}
+                    />
+                  </Tooltip>
+                  <Tooltip title="Registrar substituição">
+                    <Button
+                      shape="circle"
+                      size="small"
+                      icon={<SwapOutlined />}
+                      onClick={() => {
+                        setFootballManagementInitialTab('substitutions');
+                        setFootballManagementVisible(true);
+                      }}
+                      style={{
+                        backgroundColor: '#333',
+                        borderColor: '#faad14',
+                        color: '#faad14',
+                        width: middleButtonSize,
+                        height: middleButtonSize,
+                        minWidth: middleButtonSize,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: shouldStackScores ? 5 : 15,
+                      }}
+                    />
+                  </Tooltip>
+                </>
               )}
               <Tooltip title="Finalizar partida">
                 <Button
@@ -1368,6 +1401,7 @@ export const ScoreboardModal: React.FC<ScoreboardModalProps> = ({
         {isFootball && championshipId && matchId && (
           <FootballMatchManagementModal
             visible={footballManagementVisible}
+            initialTab={footballManagementInitialTab}
             onClose={() => {
               setFootballManagementVisible(false);
               void fetchFootballManagement().catch(() => {

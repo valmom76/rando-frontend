@@ -20,8 +20,8 @@
 
   /* Textos */
   --text: rgba(255, 255, 255, 0.92);
-  --text-2: rgba(255, 255, 255, 0.72);
-  --muted: rgba(255, 255, 255, 0.55);
+  --text-2: rgba(255, 255, 255, 0.86);
+  --muted: rgba(255, 255, 255, 0.78);
   --placeholder: #ffffff80;
 
   /* Bordas */
@@ -324,10 +324,29 @@ a:hover { color: var(--primary-hover); }
 }
 .action-btn-compact:hover { transform: translateY(-1px); opacity: 0.95; }
 
-.action-btn-compact.generate { background: var(--primary); color: #000; }
-.action-btn-compact.save     { background: var(--info); color: #fff; }
-.action-btn-compact.copy     { background: var(--warn); color: #fff; }
-.action-btn-compact.reset    { background: var(--danger); color: #fff; }
+.action-btn-compact.generate.ant-btn {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #050805 !important;
+}
+
+.action-btn-compact.save.ant-btn {
+  background: var(--info) !important;
+  border-color: var(--info) !important;
+  color: #fff !important;
+}
+
+.action-btn-compact.copy.ant-btn {
+  background: var(--warn) !important;
+  border-color: var(--warn) !important;
+  color: #120a00 !important;
+}
+
+.action-btn-compact.reset.ant-btn {
+  background: var(--danger) !important;
+  border-color: var(--danger) !important;
+  color: #fff !important;
+}
 
 /* ============================================================
    OVERRIDES ANT DESIGN (tema escuro global)
@@ -354,6 +373,72 @@ a:hover { color: var(--primary-hover); }
 .ant-card-head-title {
   color: var(--primary) !important;
   font-weight: 700 !important;
+}
+
+/* Textos auxiliares e legendas sobre o tema escuro */
+.ant-typography.ant-typography-secondary,
+.ant-form-item-extra,
+.ant-form-item-explain,
+.ant-card-meta-description,
+.ant-descriptions-item-label,
+.ant-descriptions-item-content,
+.ant-empty-description,
+.ant-list-empty-text,
+.ant-result-subtitle,
+.ant-statistic-title,
+.ant-steps-item-description,
+.ant-upload-hint,
+.ant-upload-text,
+.ant-modal-confirm-content,
+.ant-popconfirm-description,
+.ant-pagination-total-text {
+  color: var(--text-2) !important;
+}
+
+.ant-form-item-explain-error {
+  color: var(--danger) !important;
+}
+
+.ant-form-item-explain-warning {
+  color: var(--warn) !important;
+}
+
+.ant-form-item-explain-success {
+  color: var(--primary) !important;
+}
+
+/* Alertas também seguem o fundo escuro para manter a descrição legível. */
+.ant-alert {
+  background: var(--surface-3) !important;
+  border-color: var(--border-2) !important;
+}
+
+.ant-alert-info {
+  background: rgba(47, 155, 255, 0.12) !important;
+  border-color: rgba(47, 155, 255, 0.38) !important;
+}
+
+.ant-alert-warning {
+  background: rgba(255, 159, 26, 0.12) !important;
+  border-color: rgba(255, 159, 26, 0.4) !important;
+}
+
+.ant-alert-error {
+  background: rgba(255, 77, 79, 0.12) !important;
+  border-color: rgba(255, 77, 79, 0.4) !important;
+}
+
+.ant-alert-success {
+  background: rgba(var(--primary-rgb), 0.1) !important;
+  border-color: rgba(var(--primary-rgb), 0.35) !important;
+}
+
+.ant-alert-message {
+  color: var(--text) !important;
+}
+
+.ant-alert-description {
+  color: var(--text-2) !important;
 }
 
 /* Table */
@@ -513,6 +598,17 @@ a:hover { color: var(--primary-hover); }
 /* Checkbox */
 .ant-checkbox-wrapper {
   color: var(--text) !important;
+}
+
+/* Contraste global dos dois estilos principais de botão.
+   Classes semânticas específicas (perigo, aviso, informação) continuam
+   podendo definir suas próprias cores mais abaixo neste arquivo. */
+.ant-btn.ant-btn-primary:not(.ant-btn-dangerous) {
+  color: #050805;
+}
+
+.ant-btn.ant-btn-default:not(.ant-btn-dangerous):not(.action-btn-compact) {
+  color: var(--primary);
 }
 
 /* Botões desabilitados */
@@ -1417,19 +1513,19 @@ a:hover { color: var(--primary-hover); }
 .dashboard-btn.primary.ant-btn {
   background: var(--primary);
   border-color: var(--primary);
-  color: #06140b;
+  color: #050805 !important;
 }
 
 .dashboard-btn.primary.ant-btn:hover {
   background: var(--primary-hover) !important;
   border-color: var(--primary-hover) !important;
-  color: #06140b !important;
+  color: #050805 !important;
 }
 
 .dashboard-btn.warning.ant-btn {
   background: var(--warn);
   border-color: var(--warn);
-  color: #120a00;
+  color: #120a00 !important;
 }
 
 .dashboard-btn.warning.ant-btn:hover {
@@ -1453,13 +1549,13 @@ a:hover { color: var(--primary-hover); }
 .dashboard-btn.info.ant-btn {
   background: var(--info);
   border-color: var(--info);
-  color: #120a00;
+  color: #fff !important;
 }
 
 .dashboard-btn.info.ant-btn:hover {
   background: #1a8efc !important;
   border-color: #1a8efc !important;
-  color: #120a00 !important;
+  color: #fff !important;
 }
 
 /* Stats */
@@ -3107,6 +3203,14 @@ a:hover { color: var(--primary-hover); }
   flex-shrink: 0;
 }
 
+.teamgen-attendance-section {
+  flex-shrink: 0;
+}
+
+.teamgen-attendance-section > .ant-card {
+  margin-bottom: var(--s-3) !important;
+}
+
 .teamgen-teams-scroll {
   flex: 1;
   min-height: 0;
@@ -3133,15 +3237,19 @@ a:hover { color: var(--primary-hover); }
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   padding: var(--s-3);
+  min-width: 0;
+  box-shadow: var(--shadow-1);
   transition:
     border-color 0.18s ease,
     background 0.18s ease,
-    transform 0.18s ease;
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .teamgen-team-card:hover {
   transform: translateY(-2px);
   border-color: rgba(var(--primary-rgb), 0.35);
+  box-shadow: var(--shadow-2);
 }
 
 .teamgen-team-card.drag-over {
@@ -3150,16 +3258,29 @@ a:hover { color: var(--primary-hover); }
 }
 
 .teamgen-team-title {
-  color: var(--primary);
-  font-size: var(--fs-4);
-  font-weight: 950;
-  margin-bottom: var(--s-2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s-2);
+  margin-bottom: var(--s-3);
 }
 
-.teamgen-team-title span {
+.teamgen-team-name {
+  color: var(--primary);
+  font-size: var(--fs-3);
+  font-weight: 950;
+}
+
+.teamgen-team-score {
+  padding: 4px 8px;
   color: var(--text-2);
-  font-size: var(--fs-1);
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+  background: rgba(var(--primary-rgb), 0.08);
+  border: 1px solid rgba(var(--primary-rgb), 0.16);
+  border-radius: 999px;
 }
 
 .teamgen-team-players {
@@ -3173,16 +3294,44 @@ a:hover { color: var(--primary-hover); }
   justify-content: space-between;
   align-items: center;
   gap: var(--s-2);
-  padding: 7px 9px;
-  background: var(--surface-3);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: var(--r-xs);
+  min-height: 42px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--r-sm);
   cursor: grab;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.teamgen-player-row:not(.disabled):hover {
+  background: rgba(var(--primary-rgb), 0.07);
+  border-color: rgba(var(--primary-rgb), 0.22);
+  transform: translateX(2px);
+}
+
+.teamgen-player-row:not(.disabled):active {
+  cursor: grabbing;
 }
 
 .teamgen-player-row.disabled {
   cursor: not-allowed;
   opacity: 0.55;
+}
+
+.teamgen-player-main {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.teamgen-player-drag-icon {
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .teamgen-player-name {
@@ -3195,10 +3344,23 @@ a:hover { color: var(--primary-hover); }
 }
 
 .teamgen-player-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   color: var(--text-2);
   font-size: var(--fs-1);
   font-weight: 900;
   white-space: nowrap;
+}
+
+.teamgen-player-sex {
+  min-width: 22px;
+  padding: 2px 5px;
+  color: var(--text);
+  line-height: 1.2;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.09);
+  border-radius: 999px;
 }
 
 /* Estados */
@@ -3234,41 +3396,114 @@ a:hover { color: var(--primary-hover); }
 /* Modal ajuste de times */
 
 .teamgen-adjust-modal {
-  top: 0 !important;
-  max-width: 100vw;
-  padding-bottom: 0;
+  top: 24px !important;
+  padding-bottom: 24px;
 }
 
 .teamgen-adjust-modal .ant-modal-content {
-  height: 100vh;
-  border-radius: 0 !important;
-  background: var(--bg) !important;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 48px);
+  overflow: hidden;
+  background: var(--surface) !important;
+  border: 1px solid rgba(var(--primary-rgb), 0.2);
+  border-radius: 18px !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.58);
 }
 
 .teamgen-adjust-modal .ant-modal-header {
-  background: var(--bg) !important;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 20px 24px;
+  background: var(--surface) !important;
   border-bottom: 1px solid var(--border-primary) !important;
 }
 
 .teamgen-adjust-modal .ant-modal-body {
-  height: calc(100vh - 86px);
-  padding: clamp(12px, 2vw, 24px);
+  min-height: 340px;
+  padding: 22px 24px 26px;
   overflow: auto;
-  background: var(--bg) !important;
+  background:
+    radial-gradient(circle at top left, rgba(var(--primary-rgb), 0.045), transparent 34%),
+    var(--bg) !important;
+}
+
+.teamgen-adjust-modal .ant-modal-close {
+  top: 18px;
+  inset-inline-end: 18px;
+  color: var(--text-2);
+  border-radius: var(--r-sm);
+}
+
+.teamgen-adjust-modal .ant-modal-close:hover {
+  color: var(--primary);
+  background: rgba(var(--primary-rgb), 0.1);
+}
+
+.teamgen-adjust-modal .ant-modal-footer {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 14px 24px;
+  background: var(--surface);
+  border-top: 1px solid var(--border-primary);
+}
+
+.teamgen-adjust-modal-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-right: 42px;
+}
+
+.teamgen-adjust-modal-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  color: var(--primary);
+  font-size: 20px;
+  background: rgba(var(--primary-rgb), 0.1);
+  border: 1px solid rgba(var(--primary-rgb), 0.2);
+  border-radius: 12px;
 }
 
 .teamgen-adjust-modal-title {
-  width: 100%;
+  color: var(--primary);
+  font-size: clamp(18px, 2vw, 23px);
+  font-weight: 950;
+  line-height: 1.2;
+}
+
+.teamgen-adjust-modal-subtitle {
+  margin-top: 4px;
+  color: var(--text-2);
+  font-size: var(--fs-2);
+  font-weight: 500;
+}
+
+.teamgen-adjust-modal .teamgen-teams-grid.wide {
+  grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+  gap: 16px;
+}
+
+.teamgen-adjust-modal-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: var(--s-3);
 }
 
-.teamgen-adjust-modal-title span {
-  color: var(--primary);
-  font-size: clamp(20px, 3vw, 28px);
-  font-weight: 950;
+.teamgen-adjust-modal-summary {
+  color: var(--text-2);
+  font-size: var(--fs-2);
+  font-weight: 700;
+}
+
+.teamgen-adjust-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
 }
 
 /* Potes */
@@ -3412,13 +3647,65 @@ a:hover { color: var(--primary-hover); }
     justify-content: center;
   }
 
-  .teamgen-adjust-modal-title {
+  .teamgen-adjust-modal {
+    top: 8px !important;
+    padding-bottom: 8px;
+  }
+
+  .teamgen-adjust-modal .ant-modal-content {
+    max-height: calc(100dvh - 16px);
+    border-radius: 14px !important;
+  }
+
+  .teamgen-adjust-modal .ant-modal-header {
+    padding: 16px;
+  }
+
+  .teamgen-adjust-modal .ant-modal-body {
+    min-height: 0;
+    padding: 14px;
+  }
+
+  .teamgen-adjust-modal .ant-modal-footer {
+    padding: 12px 14px;
+  }
+
+  .teamgen-adjust-modal-heading {
     align-items: flex-start;
+    padding-right: 34px;
+  }
+
+  .teamgen-adjust-modal-icon {
+    flex-basis: 36px;
+    width: 36px;
+    height: 36px;
+    font-size: 17px;
+  }
+
+  .teamgen-adjust-modal-subtitle {
+    font-size: 12px;
+  }
+
+  .teamgen-adjust-modal .teamgen-teams-grid.wide {
+    grid-template-columns: 1fr;
+  }
+
+  .teamgen-adjust-modal-footer {
+    align-items: stretch;
     flex-direction: column;
   }
 
-  .teamgen-adjust-modal-title .teamgen-actions {
+  .teamgen-adjust-modal-summary {
+    text-align: center;
+  }
+
+  .teamgen-adjust-modal-actions,
+  .teamgen-adjust-modal-actions .ant-btn {
     width: 100%;
+  }
+
+  .teamgen-adjust-modal-actions .ant-btn {
+    justify-content: center;
   }
 }
 
@@ -3951,6 +4238,43 @@ a:hover { color: var(--primary-hover); }
   margin-top: var(--s-2);
   color: var(--text-2);
   font-size: var(--fs-2);
+}
+
+.championships-create-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-top: var(--s-4);
+}
+
+.championships-use-generation-btn.ant-btn-primary {
+  color: #050805 !important;
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  font-weight: 800;
+  box-shadow: none;
+}
+
+.championships-use-generation-btn.ant-btn-primary:not(:disabled):hover,
+.championships-use-generation-btn.ant-btn-primary:not(:disabled):focus-visible {
+  color: #050805 !important;
+  background: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+}
+
+.championships-manual-teams-btn.ant-btn {
+  color: var(--primary) !important;
+  background: var(--surface-2) !important;
+  border-color: rgba(var(--primary-rgb), 0.5) !important;
+  font-weight: 800;
+  box-shadow: none;
+}
+
+.championships-manual-teams-btn.ant-btn:not(:disabled):hover,
+.championships-manual-teams-btn.ant-btn:not(:disabled):focus-visible {
+  color: var(--primary) !important;
+  background: rgba(var(--primary-rgb), 0.1) !important;
+  border-color: var(--primary) !important;
 }
 
 .championships-card.ant-card {

@@ -21,6 +21,7 @@ import {
 
 import { http } from '../api/http';
 import { authStore, type SportType } from '../auth/store';
+import { handleGroupLogoError, resolveGroupLogoUrl } from '../utils/groupLogo';
 
 const { Title, Text } = Typography;
 
@@ -31,8 +32,6 @@ type TenantSettings = {
   primaryColor: string;
   secondaryColor: string;
 };
-
-const FALLBACK_LOGO = '/images/boraver-logo-transparent.png';
 
 const COLOR_SCHEMES = [
   { name: 'Verde R4NDO', primary: '#01ff69', secondary: '#0b0f0c' },
@@ -167,9 +166,9 @@ export default function GroupSettingsPage() {
           <Card title="Escudo do grupo" className="group-settings-card">
             <div className="group-logo-preview" style={{ background: settings.secondaryColor }}>
               <img
-                src={settings.logoUrl || FALLBACK_LOGO}
+                src={resolveGroupLogoUrl(settings.logoUrl)}
                 alt={`Escudo ${settings.groupName}`}
-                onError={(event) => { event.currentTarget.src = FALLBACK_LOGO; }}
+                onError={handleGroupLogoError}
               />
             </div>
 
@@ -266,9 +265,9 @@ export default function GroupSettingsPage() {
               }}
             >
               <img
-                src={settings.logoUrl || FALLBACK_LOGO}
+                src={resolveGroupLogoUrl(settings.logoUrl)}
                 alt="Prévia do escudo"
-                onError={(event) => { event.currentTarget.src = FALLBACK_LOGO; }}
+                onError={handleGroupLogoError}
               />
               <div>
                 <strong style={{ color: settings.primaryColor }}>{settings.groupName}</strong>

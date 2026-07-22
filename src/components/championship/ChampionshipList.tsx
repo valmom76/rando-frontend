@@ -1,10 +1,11 @@
-import React from "react";
-import { Button, Card, Table, Typography } from "antd";
+import React, { useState } from "react";
+import { Button, Card, Table, Typography, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { TrophyOutlined } from "@ant-design/icons";
+import { HistoryOutlined, PlusOutlined, TrophyOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
 import { useChampionships } from "../../hooks/useChampionships";
+import { http } from "../../api/http";
 
 const { Title, Text } = Typography;
 
@@ -41,11 +42,39 @@ const statusMap: Record<
 
 export const ChampionshipList: React.FC = () => {
   const navigate = useNavigate();
+  const [recoveringLatest, setRecoveringLatest] = useState(false);
 
   const { useList } = useChampionships();
   const { data, isLoading, error } = useList();
 
   const championships = (data ?? []) as ChampionshipSummary[];
+
+  const handleUseLatestGeneration = async () => {
+    setRecoveringLatest(true);
+    try {
+      const { data: generation } = await http.get<{ sessionId: string }>(
+        "/teams/latest-session"
+      );
+      navigate(
+        `/manual-teams?sessionId=${encodeURIComponent(generation.sessionId)}`
+      );
+    } catch (requestError: unknown) {
+      const responseData =
+        typeof requestError === "object" &&
+        requestError !== null &&
+        "response" in requestError
+          ? (requestError as { response?: { data?: { message?: string; error?: string } } })
+              .response?.data
+          : undefined;
+      message.error(
+        responseData?.message ??
+          responseData?.error ??
+          "Nenhuma geração de times foi encontrada."
+      );
+    } finally {
+      setRecoveringLatest(false);
+    }
+  };
 
   const columns: ColumnsType<ChampionshipSummary> = [
     {
@@ -144,6 +173,26 @@ export const ChampionshipList: React.FC = () => {
           Acompanhe os campeonatos criados, seus status, grupos e quantidade de
           times.
         </Text>
+
+        <div className="championships-create-actions">
+          <Button
+            type="primary"
+            icon={<HistoryOutlined />}
+            loading={recoveringLatest}
+            onClick={() => void handleUseLatestGeneration()}
+            className="championships-use-generation-btn"
+          >
+            Usar última geração
+          </Button>
+
+          <Button
+            icon={<PlusOutlined />}
+            onClick={() => navigate("/manual-teams")}
+            className="championships-manual-teams-btn"
+          >
+            Montar times manualmente
+          </Button>
+        </div>
       </header>
 
       <Card

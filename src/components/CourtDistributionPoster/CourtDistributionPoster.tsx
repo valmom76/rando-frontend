@@ -1,5 +1,6 @@
 import { forwardRef, type CSSProperties } from 'react';
 import { authStore } from '../../auth/store';
+import { handleGroupLogoError, resolveGroupLogoUrl } from '../../utils/groupLogo';
 import './CourtDistributionPoster.css';
 
 export interface PosterTeamInfo {
@@ -54,10 +55,10 @@ export const CourtDistributionPoster = forwardRef<
       </header>
 
       <img
-        src={branding.logoUrl || '/images/boraver-logo-transparent.png'}
+        src={resolveGroupLogoUrl(branding.logoUrl)}
         alt="Escudo do grupo"
         className="court-poster-logo"
-        onError={(event) => { event.currentTarget.src = '/images/boraver-logo-transparent.png'; }}
+        onError={handleGroupLogoError}
       />
 
       <section className="court-poster-grid">

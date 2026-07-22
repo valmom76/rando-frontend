@@ -15,11 +15,13 @@ import {
   WhatsAppOutlined,
   NumberOutlined,
   SettingOutlined,
+  AuditOutlined,
 } from "@ant-design/icons";
 import { FaVolleyballBall } from "@react-icons/all-files/fa/FaVolleyballBall";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
 import { authStore } from "../auth/store";
+import { handleGroupLogoError, resolveGroupLogoUrl } from "../utils/groupLogo";
 import { useState } from "react";
 
 const { Sider } = Layout;
@@ -33,20 +35,19 @@ export default function Nav({ collapsed, onToggle }: NavProps) {
   const nav = useNavigate();
   const loc = useLocation();
   const { slug } = useParams();
-  const token = authStore.getToken();
   const isMobile = useMediaQuery({ maxWidth: 768 });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const auth = authStore.get();
-  const features = auth.features || [];
   const groupName = auth.groupName || slug || "Team Generator";
   const sportLabel = auth.sportType === 'FOOTBALL' ? 'Futebol' : 'Vôlei';
 
-  const logoSrc = auth.logoUrl || "/logo_minimal_light.svg";
+  const logoSrc = resolveGroupLogoUrl(auth.logoUrl);
 
   const base = slug ? `/t/${slug}` : "";
 
   const menuItems = useMemo(() => {
+    const features = auth.features || [];
     const items = [
       { key: `${base}/dashboard`, icon: <TrophyOutlined />, label: "Dashboard" },
       { key: `${base}/performance`, icon: <BarChartOutlined />, label: "Desempenho" },
@@ -65,13 +66,14 @@ export default function Nav({ collapsed, onToggle }: NavProps) {
     }
 
     if (auth.role === 'ADMIN') {
+      items.push({ key: `${base}/reports/attendance`, icon: <AuditOutlined />, label: "Frequência" });
       items.push({ key: `${base}/settings`, icon: <SettingOutlined />, label: "Identidade do grupo" });
     }
 
     items.push({ key: `${base}/logout`, icon: <LogoutOutlined />, label: "Sair" });
 
     return items;
-  }, [token, base, features, auth.role]);
+  }, [base, auth.features, auth.role]);
 
   const selectedKey = useMemo(() => {
     return (
@@ -133,7 +135,7 @@ export default function Nav({ collapsed, onToggle }: NavProps) {
               src={logoSrc}
               alt={`Escudo ${groupName}`}
               className="nav-logo"
-              onError={(event) => { event.currentTarget.src = '/logo_minimal_light.svg'; }}
+              onError={handleGroupLogoError}
             />
             {!collapsed && (
               <div className="nav-brand-text">
@@ -248,7 +250,7 @@ export default function Nav({ collapsed, onToggle }: NavProps) {
               src={logoSrc}
               alt={`Escudo ${groupName}`}
               style={{ width: 38, height: 38, objectFit: 'contain' }}
-              onError={(event) => { event.currentTarget.src = '/logo_minimal_light.svg'; }}
+              onError={handleGroupLogoError}
             />
             <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{groupName.toUpperCase()}</span>
           </div>

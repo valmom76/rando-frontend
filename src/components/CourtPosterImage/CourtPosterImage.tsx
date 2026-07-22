@@ -1,4 +1,5 @@
 import { forwardRef, type CSSProperties } from 'react';
+import { handleGroupLogoError, resolveGroupLogoUrl } from '../../utils/groupLogo';
 import './CourtPosterImage.css';
 
 export interface TeamPlayer {
@@ -74,10 +75,10 @@ export const CourtPosterImage = forwardRef<HTMLDivElement, CourtPosterImageProps
         </header>
 
         <img
-          src={logoUrl || '/images/boraver-logo-transparent.png'}
+          src={resolveGroupLogoUrl(logoUrl)}
           alt="Escudo do grupo"
           className="court-image-logo"
-          onError={(event) => { event.currentTarget.src = '/images/boraver-logo-transparent.png'; }}
+          onError={handleGroupLogoError}
         />
 
         <section className="court-image-layout">

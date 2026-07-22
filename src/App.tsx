@@ -29,6 +29,7 @@ import SessionHistory from "./pages/SessionHistory";
 import { usePlanSync } from './hooks/usePlanSync';
 import { useTenantTheme } from './hooks/useTenantTheme';
 import GroupSettingsPage from './pages/GroupSettingsPage';
+import AttendanceReportPage from './pages/AttendanceReportPage';
 
 const { Content } = Layout;
 
@@ -122,6 +123,7 @@ export default function App() {
               <Route path="/championships/:id" element={<RequireAuth><ChampionshipDetailPage /></RequireAuth>} />
               <Route path="/manual-teams" element={<RequireAuth><ManualTeamPage /></RequireAuth>} />
               <Route path="/settings" element={<RequireAuth><GroupSettingsPage /></RequireAuth>} />
+              <Route path="/reports/attendance" element={<RequireAuth><AttendanceReportPage /></RequireAuth>} />
 
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>

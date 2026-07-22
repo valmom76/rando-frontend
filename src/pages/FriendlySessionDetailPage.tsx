@@ -6,6 +6,7 @@ import { http } from '../api/http';
 import { ScoreboardModal } from '../components/championship/ScoreboardModal';
 import { useMediaQuery } from 'react-responsive';
 import { authStore } from '../auth/store';
+import { SessionAttendanceCard } from '../components/attendance/SessionAttendanceCard';
 
 const { Title, Text } = Typography;
 
@@ -13,6 +14,7 @@ export default function FriendlySessionDetailPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const isMobile = useMediaQuery({ maxWidth: 768 });
   const sportType = authStore.get().sportType ?? 'VOLLEYBALL';
+  const isAdmin = authStore.get().role === 'ADMIN';
   const [details, setDetails] = useState<any>(null);
   const [showScoreboard, setShowScoreboard] = useState(false);
   const [scoreboardData, setScoreboardData] = useState<{
@@ -227,6 +229,8 @@ export default function FriendlySessionDetailPage() {
         {details.sessionDate || details.dateFormatted || 'Sessão de Times'}
         {details.sessionTime && <span style={{ fontSize: 16, color: '#aaa', marginLeft: 8 }}>às {details.sessionTime}</span>}
       </Title>
+
+      {isAdmin && sessionId && <SessionAttendanceCard sessionId={sessionId} />}
 
       {!selectedCourt && details.courts.length > 1 ? (
         renderCourtSelection()

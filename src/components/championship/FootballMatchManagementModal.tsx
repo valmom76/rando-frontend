@@ -69,6 +69,7 @@ type ManagementData = {
 interface Props {
   visible: boolean;
   onClose: () => void;
+  initialTab?: ManagementTab;
   championshipId: string;
   matchId: string;
   homeTeamIndex: number;
@@ -76,6 +77,8 @@ interface Props {
   homeTeamName: string;
   awayTeamName: string;
 }
+
+type ManagementTab = 'lineup' | 'officials' | 'cards' | 'substitutions';
 
 const errorMessage = (error: unknown, fallback: string) => {
   if (typeof error !== 'object' || error === null || !('response' in error)) return fallback;
@@ -88,6 +91,7 @@ const errorMessage = (error: unknown, fallback: string) => {
 export function FootballMatchManagementModal({
   visible,
   onClose,
+  initialTab = 'lineup',
   championshipId,
   matchId,
   homeTeamIndex,
@@ -99,6 +103,7 @@ export function FootballMatchManagementModal({
   const [saving, setSaving] = useState(false);
   const [data, setData] = useState<ManagementData | null>(null);
   const [referees, setReferees] = useState<Referee[]>([]);
+  const [activeTab, setActiveTab] = useState<ManagementTab>(initialTab);
 
   const [homeStarters, setHomeStarters] = useState<string[]>([]);
   const [homeReserves, setHomeReserves] = useState<string[]>([]);
@@ -158,8 +163,11 @@ export function FootballMatchManagementModal({
   }, [championshipId, hydrate, matchId]);
 
   useEffect(() => {
-    if (visible) void load();
-  }, [load, visible]);
+    if (visible) {
+      setActiveTab(initialTab);
+      void load();
+    }
+  }, [initialTab, load, visible]);
 
   const playersByTeam = (teamIndex: number) =>
     data?.players.filter((player) => player.teamIndex === teamIndex) ?? [];
@@ -520,12 +528,16 @@ export function FootballMatchManagementModal({
       loading={loading}
       destroyOnHidden
     >
-      <Tabs items={[
+      <Tabs
+        activeKey={activeTab}
+        onChange={(key) => setActiveTab(key as ManagementTab)}
+        items={[
         { key: 'lineup', label: 'Escalação', children: lineupTab },
         { key: 'officials', label: 'Arbitragem', children: officialsTab },
         { key: 'cards', label: 'Cartões', children: cardsTab },
         { key: 'substitutions', label: 'Substituições', children: substitutionsTab },
-      ]} />
+        ]}
+      />
     </Modal>
   );
 }
